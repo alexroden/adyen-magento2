@@ -71,4 +71,11 @@
             <resource ref="anonymous"/>
         </resources>
     </route>
+
+    <route url="/V1/guest-carts/:cartId/checkout/initiate" method="GET">
+        <service class="Adyen\Payment\Api\OrderCheckoutInitiateInterface" method="initiateCheckout"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
 </routes>

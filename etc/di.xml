@@ -842,6 +842,8 @@
                 type="Adyen\Payment\Model\AdyenOriginKey"/>
     <preference for="Adyen\Payment\Api\AdyenOrderPaymentStatusInterface"
                 type="Adyen\Payment\Model\AdyenOrderPaymentStatus"/>
+    <preference for="Adyen\Payment\Api\OrderCheckoutInitiateInterface"
+                type="Adyen\Payment\Model\OrderCheckoutInitiate"/>
     <type name="Magento\Vault\Api\PaymentTokenRepositoryInterface">
         <plugin name="AdyenPaymentVaultDeleteToken" type="Adyen\Payment\Plugin\PaymentVaultDeleteToken" sortOrder="10"/>
     </type>
