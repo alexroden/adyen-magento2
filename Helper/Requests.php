@@ -316,11 +316,12 @@ class Requests extends AbstractHelper
             if ($channel === 'web') {
                 $request['additionalData']['allow3DS2'] = true;
             } else {
-                $request['additionalData']['‘executeThreeD’'] = true;
+                $request['additionalData']['executeThreeD'] = true;
             }
 
             $request['origin'] = $this->adyenHelper->getOrigin();
             $request['channel'] = $channel;
+            $request['returnUrl'] = $additionalData[AdyenCcDataAssignObserver::RETURN_URL] ?? 'adyencheckout://com.itsoneiota.adyen_dropin.example';
             $request['browserInfo']['screenWidth'] = $additionalData[AdyenCcDataAssignObserver::SCREEN_WIDTH];
             $request['browserInfo']['screenHeight'] = $additionalData[AdyenCcDataAssignObserver::SCREEN_HEIGHT];
             $request['browserInfo']['colorDepth'] = $additionalData[AdyenCcDataAssignObserver::SCREEN_COLOR_DEPTH];
@@ -336,7 +337,7 @@ class Requests extends AbstractHelper
             if ($channel === 'web') {
                 $request['additionalData']['allow3DS2'] = false;
             } else {
-                $request['additionalData']['‘executeThreeD’'] = false;
+                $request['additionalData']['executeThreeD'] = false;
             }
 
             $request['origin'] = $this->adyenHelper->getOrigin();

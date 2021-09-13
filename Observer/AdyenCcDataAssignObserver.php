@@ -47,6 +47,7 @@ class AdyenCcDataAssignObserver extends AbstractDataAssignObserver
     const GUEST_EMAIL = 'guestEmail';
     const COMBO_CARD_TYPE = 'combo_card_type';
     const CHANNEL = 'channel';
+    const RETURN_URL = 'return_url';
 
     /**
      * @var array
@@ -70,6 +71,7 @@ class AdyenCcDataAssignObserver extends AbstractDataAssignObserver
         self::GUEST_EMAIL,
         self::COMBO_CARD_TYPE,
         self::CHANNEL,
+        self::RETURN_URL,
     ];
 
     /**
