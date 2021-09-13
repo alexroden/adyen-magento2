@@ -84,6 +84,8 @@ class AdyenOrderPaymentStatus implements \Adyen\Payment\Api\AdyenOrderPaymentSta
             $token = null;
             if (!empty($additionalInformation['threeDS2Token'])) {
                 $token = $additionalInformation['threeDS2Token'];
+            } else if (!empty($additionalInformation['redirectUrl'])) {
+                $token = $additionalInformation['redirectUrl'];
             }
 
             return $this->adyenHelper->buildThreeDS2ProcessResponseJson($type, $token);
