@@ -122,6 +122,10 @@ class AdyenInitiateTerminalApi implements AdyenInitiateTerminalApiInterface
 
         $poiId = $payload['terminal_id'];
 
+        if (!empty($payload['quote_id'])) {
+            $this->checkoutSession->setQuoteId($payload['quote_id']);
+        }
+
         $quote = $this->checkoutSession->getQuote();
         $payment = $quote->getPayment();
         $payment->setMethod(AdyenPosCloudConfigProvider::CODE);
