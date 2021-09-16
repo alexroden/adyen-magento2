@@ -321,7 +321,10 @@ class Requests extends AbstractHelper
 
             $request['origin'] = $this->adyenHelper->getOrigin();
             $request['channel'] = $channel;
-            $request['returnUrl'] = $additionalData[AdyenCcDataAssignObserver::RETURN_URL] ?? 'adyencheckout://com.itsoneiota.adyen_dropin.example';
+            $request['returnUrl'] = 'adyencheckout://com.itsoneiota.adyen_dropin.example';
+            if (isset($additionalData[AdyenCcDataAssignObserver::RETURN_URL]) && $additionalData[AdyenCcDataAssignObserver::RETURN_URL] !== '') {
+                $request['returnUrl'] = $additionalData[AdyenCcDataAssignObserver::RETURN_URL];
+            }
             $request['browserInfo']['screenWidth'] = $additionalData[AdyenCcDataAssignObserver::SCREEN_WIDTH];
             $request['browserInfo']['screenHeight'] = $additionalData[AdyenCcDataAssignObserver::SCREEN_HEIGHT];
             $request['browserInfo']['colorDepth'] = $additionalData[AdyenCcDataAssignObserver::SCREEN_COLOR_DEPTH];
