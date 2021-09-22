@@ -109,6 +109,14 @@ class AdyenThreeDS2Process implements AdyenThreeDS2ProcessInterface
 
             // unset payment data from additional information
             $payment->unsAdditionalInformation("adyenPaymentData");
+        } else if ($paymentData = $payment->getAdditionalInformation("paymentData")) {
+            // Add payment data into the request object
+            $request = [
+                "paymentData" => $paymentData
+            ];
+
+            // unset payment data from additional information
+            $payment->unsAdditionalInformation("paymentData");
         } else {
             $this->adyenLogger->error("3D secure 2.0 failed, payment data not found");
             throw new \Magento\Framework\Exception\LocalizedException(
@@ -121,10 +129,12 @@ class AdyenThreeDS2Process implements AdyenThreeDS2ProcessInterface
             $request['details']['threeds2.fingerprint'] = $payload['details']['threeds2.fingerprint'];
         } elseif (!empty($payload['details']['threeds2.challengeResult'])) {
             $request['details']['threeds2.challengeResult'] = $payload['details']['threeds2.challengeResult'];
+        } elseif (!empty($payload['details']['MD']) && !empty($payload['details']['PaRes'])) {
+            $request['details']['MD'] = $payload['details']['MD'];
+            $request['details']['PaRes'] = $payload['details']['PaRes'];
         } elseif (!empty($payload)) {
             $request = $payload;
         }
-
 
         // Send the request
         try {

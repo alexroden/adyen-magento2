@@ -311,10 +311,20 @@ class Requests extends AbstractHelper
      */
     public function buildThreeDS2Data($additionalData, $storeId, $request = [])
     {
+        $channel = $additionalData[AdyenCcDataAssignObserver::CHANNEL] ?? 'web';
         if ($this->adyenHelper->isCreditCardThreeDS2Enabled($storeId)) {
-            $request['additionalData']['allow3DS2'] = true;
+            if ($channel === 'web') {
+                $request['additionalData']['allow3DS2'] = true;
+            } else {
+                $request['additionalData']['executeThreeD'] = true;
+            }
+
             $request['origin'] = $this->adyenHelper->getOrigin();
-            $request['channel'] = 'web';
+            $request['channel'] = $channel;
+            $request['returnUrl'] = 'adyencheckout://com.itsoneiota.adyen_dropin.example';
+            if (isset($additionalData[AdyenCcDataAssignObserver::RETURN_URL]) && $additionalData[AdyenCcDataAssignObserver::RETURN_URL] !== '') {
+                $request['returnUrl'] = $additionalData[AdyenCcDataAssignObserver::RETURN_URL];
+            }
             $request['browserInfo']['screenWidth'] = $additionalData[AdyenCcDataAssignObserver::SCREEN_WIDTH];
             $request['browserInfo']['screenHeight'] = $additionalData[AdyenCcDataAssignObserver::SCREEN_HEIGHT];
             $request['browserInfo']['colorDepth'] = $additionalData[AdyenCcDataAssignObserver::SCREEN_COLOR_DEPTH];
@@ -327,9 +337,14 @@ class Requests extends AbstractHelper
                 $request['browserInfo']['javaEnabled'] = false;
             }
         } else {
-            $request['additionalData']['allow3DS2'] = false;
+            if ($channel === 'web') {
+                $request['additionalData']['allow3DS2'] = false;
+            } else {
+                $request['additionalData']['executeThreeD'] = false;
+            }
+
             $request['origin'] = $this->adyenHelper->getOrigin();
-            $request['channel'] = 'web';
+            $request['channel'] = $channel;
         }
 
         return $request;
