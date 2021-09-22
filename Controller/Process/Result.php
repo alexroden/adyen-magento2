@@ -105,7 +105,11 @@ class Result extends \Magento\Framework\App\Action\Action
             if ($result) {
                 $session = $this->_session;
                 $session->getQuote()->setIsActive(false)->save();
-                $this->_redirect('checkout/onepage/success', ['_query' => ['utm_nooverride' => '1']]);
+                if (empty($response['quoteID'])) {
+                    $this->_redirect('checkout/onepage/success', ['_query' => ['utm_nooverride' => '1']]);
+                }
+
+                return;
             } else {
                 $this->_adyenLogger->addAdyenResult(
                     sprintf(
@@ -163,6 +167,7 @@ class Result extends \Magento\Framework\App\Action\Action
             );
         }
 
+        $quoteID = $response['quoteID'] ?? null;
         // If the merchant signature is present, authenticate the result url
         if (!empty($response['merchantSig'])) {
             // authenticate result url
@@ -205,6 +210,13 @@ class Result extends \Magento\Framework\App\Action\Action
                     'adyen_response' => $response
                 ]
             );
+
+            if ($quoteID !== null) {
+                $this->getResponse()
+                    ->clearHeader('Content-Type')
+                    ->setHeader('Content-Type', 'application/json')
+                    ->setBody(json_encode($response));
+            }
         } else {
             throw new \Magento\Framework\Exception\LocalizedException(
                 __('Order does not exists with increment_id: %1', $incrementId)
@@ -388,6 +400,9 @@ class Result extends \Magento\Framework\App\Action\Action
         $service = $this->_adyenHelper->createAdyenCheckoutService($client);
 
         $request = [];
+        if (!empty($response['quoteID'])) {
+            $this->_session->setQuoteId($response['quoteID']);
+        }
 
         if (!empty($this->_session->getLastRealOrder()) &&
             !empty($this->_session->getLastRealOrder()->getPayment()) &&
