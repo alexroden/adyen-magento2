@@ -105,7 +105,7 @@ class Result extends \Magento\Framework\App\Action\Action
             if ($result) {
                 $session = $this->_session;
                 $session->getQuote()->setIsActive(false)->save();
-                if (empty($response['quoteID'])) {
+                if (empty($response['incrementID'])) {
                     $this->_redirect('checkout/onepage/success', ['_query' => ['utm_nooverride' => '1']]);
                 }
 
@@ -118,9 +118,13 @@ class Result extends \Magento\Framework\App\Action\Action
                         $this->_order->getIncrementId()
                     )
                 );
-                $this->restoreCart($response);
-                $failReturnPath = $this->_adyenHelper->getAdyenAbstractConfigData('return_path');
-                $this->_redirect($failReturnPath);
+                if (empty($response['incrementID'])) {
+                    $this->restoreCart($response);
+                    $failReturnPath = $this->_adyenHelper->getAdyenAbstractConfigData('return_path');
+                    $this->_redirect($failReturnPath);
+                }
+
+                return;
             }
         } else {
             // redirect to checkout page
@@ -167,7 +171,8 @@ class Result extends \Magento\Framework\App\Action\Action
             );
         }
 
-        $quoteID = $response['quoteID'] ?? null;
+        $incrementId = $response['incrementID'] ?? null;
+        $isApi = $incrementId !== null;
         // If the merchant signature is present, authenticate the result url
         if (!empty($response['merchantSig'])) {
             // authenticate result url
@@ -180,8 +185,6 @@ class Result extends \Magento\Framework\App\Action\Action
             // send the payload verification payment\details request to validate the response
             $response = $this->validatePayloadAndReturnResponse($response);
         }
-
-        $incrementId = null;
 
         if (!empty($response['merchantReference'])) {
             $incrementId = $response['merchantReference'];
@@ -211,13 +214,22 @@ class Result extends \Magento\Framework\App\Action\Action
                 ]
             );
 
-            if ($quoteID !== null) {
+            if ($isApi) {
                 $this->getResponse()
                     ->clearHeader('Content-Type')
                     ->setHeader('Content-Type', 'application/json')
                     ->setBody(json_encode($response));
             }
         } else {
+            if ($isApi) {
+                $this->getResponse()
+                    ->clearHeader('Content-Type')
+                    ->setHeader('Content-Type', 'application/json')
+                    ->setBody(json_encode($response));
+
+                return false;
+            }
+
             throw new \Magento\Framework\Exception\LocalizedException(
                 __('Order does not exists with increment_id: %1', $incrementId)
             );
@@ -311,7 +323,7 @@ class Result extends \Magento\Framework\App\Action\Action
         }
 
         $history = $this->_orderHistoryFactory->create()
-            //->setStatus($status)
+//            ->setStatus($status)
             ->setComment($comment)
             ->setEntityName('order')
             ->setOrder($order);
@@ -400,8 +412,8 @@ class Result extends \Magento\Framework\App\Action\Action
         $service = $this->_adyenHelper->createAdyenCheckoutService($client);
 
         $request = [];
-        if (!empty($response['quoteID'])) {
-            $this->_session->setQuoteId($response['quoteID']);
+        if (!empty($response['incrementID'])) {
+            $this->_session->setLastRealOrderId($response['incrementID']);
         }
 
         if (!empty($this->_session->getLastRealOrder()) &&
