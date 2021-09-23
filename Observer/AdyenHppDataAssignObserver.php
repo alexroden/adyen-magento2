@@ -41,6 +41,7 @@ class AdyenHppDataAssignObserver extends AbstractDataAssignObserver
     const IBAN_NUMBER = 'ibanNumber';
     const BANK_ACCOUNT_NUMBER = 'bankAccountNumber';
     const BANK_LOCATIONID = 'bankLocationId';
+    const RETURN_URL = 'return_url';
 
     /**
      * @var array
@@ -57,7 +58,8 @@ class AdyenHppDataAssignObserver extends AbstractDataAssignObserver
         self::BANK_ACCOUNT_OWNER_NAME,
         self::IBAN_NUMBER,
         self::BANK_ACCOUNT_NUMBER,
-        self::BANK_LOCATIONID
+        self::BANK_LOCATIONID,
+        self::RETURN_URL
     ];
 
     /**
