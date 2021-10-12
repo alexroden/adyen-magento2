@@ -134,7 +134,7 @@ class PaymentMethods extends AbstractHelper
     /**
      * {@inheritDoc}
      */
-    public function getPaymentMethods($quoteId, $country = null)
+    public function getPaymentMethods($quoteId, $country = null, $channel = 'Web')
     {
         // get quote from quoteId
         $quote = $this->quoteRepository->getActive($quoteId);
@@ -146,15 +146,16 @@ class PaymentMethods extends AbstractHelper
 
         $this->setQuote($quote);
 
-        $paymentMethods = $this->fetchAlternativeMethods($country);
+        $paymentMethods = $this->fetchAlternativeMethods($country, $channel);
         return $paymentMethods;
     }
 
     /**
      * @param $country
+     * @param string $channel
      * @return array
      */
-    protected function fetchAlternativeMethods($country)
+    protected function fetchAlternativeMethods($country, $channel = 'Web')
     {
         $quote = $this->getQuote();
         $store = $quote->getStore();
@@ -168,7 +169,7 @@ class PaymentMethods extends AbstractHelper
         $currencyCode = $this->getCurrentCurrencyCode($store);
 
         $adyFields = [
-            "channel" => "Web",
+            "channel" => $channel,
             "merchantAccount" => $merchantAccount,
             "countryCode" => $this->getCurrentCountryCode($store, $country),
             "amount" => [
