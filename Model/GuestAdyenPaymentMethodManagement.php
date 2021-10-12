@@ -52,7 +52,7 @@ class GuestAdyenPaymentMethodManagement implements \Adyen\Payment\Api\GuestAdyen
     /**
      * {@inheritDoc}
      */
-    public function getPaymentMethods($cartId, \Magento\Quote\Api\Data\AddressInterface $shippingAddress = null)
+    public function getPaymentMethods($cartId, \Magento\Quote\Api\Data\AddressInterface $shippingAddress = null, $channel = 'Web')
     {
         $quoteIdMask = $this->_quoteIdMaskFactory->create()->load($cartId, 'masked_id');
         $quoteId = $quoteIdMask->getQuoteId();
@@ -63,6 +63,6 @@ class GuestAdyenPaymentMethodManagement implements \Adyen\Payment\Api\GuestAdyen
             $country = $shippingAddress->getCountryId();
         }
 
-        return $this->_paymentMethodsHelper->getPaymentMethods($quoteId, $country);
+        return $this->_paymentMethodsHelper->getPaymentMethods($quoteId, $country, $channel);
     }
 }
