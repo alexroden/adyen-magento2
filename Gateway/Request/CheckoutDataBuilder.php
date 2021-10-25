@@ -185,10 +185,9 @@ class CheckoutDataBuilder implements BuilderInterface
         }
 
         $channel = $payment->getAdditionalInformation(AdyenCcDataAssignObserver::CHANNEL) ?: 'web';
+        $requestBody['additionalData']['allow3DS2'] = true;
         if ($channel !== 'web') {
             $requestBody['additionalData']['executeThreeD'] = true;
-        } else {
-            $requestBody['additionalData']['allow3DS2'] = true;
         }
 
         if (isset($requestBodyPaymentMethod)) {
