@@ -24,8 +24,9 @@
 
 namespace Adyen\Payment\Helper;
 
+use Adyen\Payment\Api\Data\AddressAdapterInterface;
 use Adyen\Payment\Logger\AdyenLogger;
-use Magento\Payment\Gateway\Data\AddressAdapterInterface;
+use Magento\Payment\Gateway\Data\AddressAdapterInterface as CoreAddressAdapterInterface;
 use Magento\Sales\Api\Data\OrderAddressInterface;
 
 class Address
@@ -44,8 +45,8 @@ class Address
     }
 
     // Regex to extract the house number from the street line if needed (e.g. 'Street address 1 A' => '1 A')
-    const STREET_FIRST_REGEX = "/(?<streetName>[a-zA-Z0-9.'\- ]+)\s+(?<houseNumber>\d{1,10}((\s)?\w{1,3})?)$/";
-    CONST NUMBER_FIRST_REGEX = "/^(?<houseNumber>\d{1,10}((\s)?\w{1,3})?)\s+(?<streetName>[a-zA-Z0-9.'\- ]+)/";
+    const STREET_FIRST_REGEX = "/(?<streetName>[[:alnum:].'\- ]+)\s+(?<houseNumber>\d{1,10}((\s)?\w{1,3})?)$/u";
+    const NUMBER_FIRST_REGEX = "/^(?<houseNumber>\d{1,10}((\s)?\w{1,3})?)\s+(?<streetName>[[:alnum:].'\- ]+)/u";
 
     /**
      * @param AddressAdapterInterface $address
@@ -64,6 +65,11 @@ class Address
                 $address->getStreetLine2(),
                 $address->getStreetLine3(),
                 $address->getStreetLine4()
+            ];
+        } elseif ($address instanceof CoreAddressAdapterInterface) {
+            $addressArray = [
+                $address->getStreetLine1(),
+                $address->getStreetLine2()
             ];
         } elseif ($address instanceof OrderAddressInterface) {
             $addressArray = $address->getStreet();

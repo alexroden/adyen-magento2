@@ -34,7 +34,7 @@ define(
         'uiLayout',
         'Magento_Ui/js/model/messages',
         'Magento_Checkout/js/model/error-processor',
-        'Adyen_Payment/js/bundle',
+        'Adyen_Payment/js/adyen',
         'Adyen_Payment/js/model/adyen-configuration'
     ],
     function(
@@ -51,17 +51,18 @@ define(
         layout,
         Messages,
         errorProcessor,
-        AdyenComponent,
+        AdyenCheckout,
         adyenConfiguration
     ) {
         'use strict';
 
-        // Exlude from the alternative payment methods rendering process
+        // Excluded from the alternative payment methods rendering process
         var unsupportedPaymentMethods = [
             'scheme',
             'boleto',
             'wechatpay',
-            'ratepay'];
+            'ratepay'
+        ];
 
         var popupModal;
         var selectedAlternativePaymentMethodType = ko.observable(null);
@@ -81,6 +82,7 @@ define(
                 'paypal',
                 'applepay',
                 'paywithgoogle',
+                'googlepay',
                 'amazonpay'
             ],
             initObservable: function() {
@@ -107,12 +109,12 @@ define(
 
                 self.loadAdyenPaymentMethods(paymentMethodsObserver());
             },
-            loadAdyenPaymentMethods: function(paymentMethodsResponse) {
+            loadAdyenPaymentMethods: async function (paymentMethodsResponse) {
                 var self = this;
 
                 if (!!paymentMethodsResponse.paymentMethodsResponse) {
                     var paymentMethods = paymentMethodsResponse.paymentMethodsResponse.paymentMethods;
-                    this.checkoutComponent = new AdyenCheckout({
+                    this.checkoutComponent = await AdyenCheckout({
                             locale: adyenConfiguration.getLocale(),
                             clientKey: adyenConfiguration.getClientKey(),
                             environment: adyenConfiguration.getCheckoutEnvironment(),
@@ -321,7 +323,7 @@ define(
                         self.currentMessageContainer),
                 ).fail(
                     function(response) {
-                        if (component.props.methodIdentifier == 'amazonpay') {
+                        if (component && component.props.methodIdentifier === 'amazonpay') {
                             component.handleDeclineFlow();
                         }
                         self.isPlaceOrderActionAllowed(true);
@@ -539,6 +541,7 @@ define(
              * @param response
              */
             showErrorMessage: function(response) {
+                $(".error-message-hpp").show();
                 if (!!response['responseJSON'].parameters) {
                     $('#messages-' + selectedAlternativePaymentMethodType()).
                         text((response['responseJSON'].message).replace('%1',
@@ -661,7 +664,7 @@ define(
                 var formattedShippingAddress = {};
                 var formattedBillingAddress = {};
 
-                if (!!quote.shippingAddress()) {
+                if (!quote.isVirtual() && !!quote.shippingAddress()) {
                     formattedShippingAddress = self.getFormattedAddress(quote.shippingAddress());
                 }
 

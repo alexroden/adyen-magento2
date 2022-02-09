@@ -23,19 +23,19 @@
 
 namespace Adyen\Payment\Gateway\Request;
 
-
 use Adyen\Payment\Helper\ChargedCurrency;
 use Adyen\Payment\Helper\Data;
+use Adyen\Payment\Helper\StateData;
 use Adyen\Payment\Model\Ui\AdyenBoletoConfigProvider;
 use Adyen\Payment\Model\Ui\AdyenPayByLinkConfigProvider;
 use Adyen\Payment\Observer\AdyenCcDataAssignObserver;
-use Magento\Payment\Gateway\Request\BuilderInterface;
 use Adyen\Payment\Observer\AdyenHppDataAssignObserver;
+use Magento\Catalog\Helper\Image;
+use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 
 class CheckoutDataBuilder implements BuilderInterface
 {
-
     const ORDER_EMAIL_REQUIRED_METHODS = [
         AdyenPayByLinkConfigProvider::CODE,
         AdyenBoletoConfigProvider::CODE
@@ -56,22 +56,35 @@ class CheckoutDataBuilder implements BuilderInterface
      */
     private $chargedCurrency;
 
+    /**
+     * @var Image
+     */
+    private $imageHelper;
+    /**
+     * @var StateData
+     */
+    private $stateData;
 
     /**
      * CheckoutDataBuilder constructor.
-     *
      * @param Data $adyenHelper
+     * @param StateData $stateData
      * @param CartRepositoryInterface $cartRepository
      * @param ChargedCurrency $chargedCurrency
+     * @param Image $imageHelper
      */
     public function __construct(
         Data $adyenHelper,
+        StateData $stateData,
         CartRepositoryInterface $cartRepository,
-        ChargedCurrency $chargedCurrency
+        ChargedCurrency $chargedCurrency,
+        Image $imageHelper
     ) {
         $this->adyenHelper = $adyenHelper;
+        $this->stateData = $stateData;
         $this->cartRepository = $cartRepository;
         $this->chargedCurrency = $chargedCurrency;
+        $this->imageHelper = $imageHelper;
     }
 
     /**
@@ -87,8 +100,13 @@ class CheckoutDataBuilder implements BuilderInterface
         $order = $payment->getOrder();
         $storeId = $order->getStoreId();
 
-        // Initialize the request body with the validated state data or empty array
-        $requestBody = $payment->getAdditionalInformation(AdyenCcDataAssignObserver::STATE_DATA) ?: [];
+        // Initialize the request body with the current state data
+        // Multishipping checkout uses the cc_number field for state data
+        $requestBody = $this->stateData->getStateData($order->getQuoteId());
+
+        if (empty($requestBody) && !is_null($payment->getCcNumber())) {
+            $requestBody = json_decode($payment->getCcNumber(), true);
+        }
 
         $order->setCanSendNewEmailFlag(in_array($payment->getMethod(), self::ORDER_EMAIL_REQUIRED_METHODS));
 
@@ -105,23 +123,20 @@ class CheckoutDataBuilder implements BuilderInterface
             $requestBody['bankAccount']['ownerName'] = $payment->getAdditionalInformation("bankAccountOwnerName");
         }
 
-        if ($this->adyenHelper->isPaymentMethodOpenInvoiceMethod(
-                $payment->getAdditionalInformation(AdyenHppDataAssignObserver::BRAND_CODE)
-            ) || $this->adyenHelper->isPaymentMethodAfterpayTouchMethod(
-                $payment->getAdditionalInformation(AdyenHppDataAssignObserver::BRAND_CODE)
-            ) || $this->adyenHelper->isPaymentMethodOneyMethod(
-                $payment->getAdditionalInformation(AdyenHppDataAssignObserver::BRAND_CODE)
-            ) || $payment->getMethod() == AdyenPayByLinkConfigProvider::CODE
+        $brandCode = $payment->getAdditionalInformation(AdyenHppDataAssignObserver::BRAND_CODE);
+        if ($this->adyenHelper->isPaymentMethodOpenInvoiceMethod($brandCode)
+            || $this->adyenHelper->isPaymentMethodAfterpayTouchMethod($brandCode)
+            || $this->adyenHelper->isPaymentMethodOneyMethod($brandCode)
+            || $payment->getMethod() == AdyenPayByLinkConfigProvider::CODE
         ) {
             $openInvoiceFields = $this->getOpenInvoiceData($order);
             $requestBody = array_merge($requestBody, $openInvoiceFields);
         }
 
         // Ratepay specific Fingerprint
-        if ($payment->getAdditionalInformation("df_value") && $this->adyenHelper->isPaymentMethodRatepayMethod(
-                $payment->getAdditionalInformation(AdyenHppDataAssignObserver::BRAND_CODE)
-            )) {
-            $requestBody['deviceFingerprint'] = $payment->getAdditionalInformation("df_value");
+        $deviceFingerprint = $payment->getAdditionalInformation(AdyenHppDataAssignObserver::DF_VALUE);
+        if ($deviceFingerprint && $this->adyenHelper->isPaymentMethodRatepayMethod($brandCode)) {
+            $requestBody['deviceFingerprint'] = $deviceFingerprint;
         }
 
         //Boleto data
@@ -190,9 +205,9 @@ class CheckoutDataBuilder implements BuilderInterface
             $requestBody['paymentMethod'] = $requestBodyPaymentMethod;
         }
 
-        $request['body'] = $requestBody;
-
-        return $request;
+        return [
+            'body' => $requestBody
+        ];
     }
 
     /**
@@ -208,6 +223,24 @@ class CheckoutDataBuilder implements BuilderInterface
             return 'maestro';
         }
         return null;
+    }
+
+    /**
+     * @param string $item
+     * @return string
+     */
+    protected function getImageUrl($item): string
+    {
+        $product = $item->getProduct();
+        $imageUrl = "";
+
+        if ($image = $product->getSmallImage()) {
+            $imageUrl = $this->imageHelper->init($product, 'product_page_image_small')
+                ->setImageFile($image)
+                ->getUrl();
+        }
+
+        return $imageUrl;
     }
 
     /**
@@ -262,7 +295,9 @@ class CheckoutDataBuilder implements BuilderInterface
                 'description' => $item->getName(),
                 'quantity' => $numberOfItems,
                 'taxCategory' => $item->getProduct()->getAttributeText('tax_class_id'),
-                'taxPercentage' => $formattedTaxPercentage
+                'taxPercentage' => $formattedTaxPercentage,
+                'productUrl' => $item->getProduct()->getUrlModel()->getUrl($item->getProduct()),
+                'imageUrl' => $this->getImageUrl($item)
             ];
         }
 
@@ -271,7 +306,8 @@ class CheckoutDataBuilder implements BuilderInterface
             $description = __('Discount');
             $itemAmount = -$this->adyenHelper->formatAmount(
                 $discountAmount + $cart->getShippingAddress()->getShippingDiscountAmount(),
-                $itemAmountCurrency->getCurrencyCode());
+                $itemAmountCurrency->getCurrencyCode()
+            );
             $itemVatAmount = "0";
             $itemVatPercentage = "0";
             $numberOfItems = 1;
