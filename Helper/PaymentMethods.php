@@ -142,12 +142,13 @@ class PaymentMethods extends AbstractHelper
     /**
      * @param $quoteId
      * @param null $country
+     * @param $channel
      * @return array
      * @throws \Adyen\AdyenException
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function getPaymentMethods($quoteId, $country = null)
+    public function getPaymentMethods($quoteId, $country = null, $channel = null)
     {
         // get quote from quoteId
         $quote = $this->quoteRepository->getActive($quoteId);
@@ -159,16 +160,17 @@ class PaymentMethods extends AbstractHelper
 
         $this->setQuote($quote);
 
-        return $this->fetchPaymentMethods($country);
+        return $this->fetchPaymentMethods($country, $channel);
     }
 
     /**
      * @param $country
+     * @param $channel
      * @return array
      * @throws \Adyen\AdyenException
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    protected function fetchPaymentMethods($country)
+    protected function fetchPaymentMethods($country, $channel = null)
     {
         $quote = $this->getQuote();
         $store = $quote->getStore();
@@ -179,7 +181,7 @@ class PaymentMethods extends AbstractHelper
             return json_encode([]);
         }
 
-        $paymentMethodRequest = $this->getPaymentMethodsRequest($merchantAccount, $store, $country, $quote);
+        $paymentMethodRequest = $this->getPaymentMethodsRequest($merchantAccount, $store, $country, $quote, $channel);
         $responseData = $this->getPaymentMethodsResponse($paymentMethodRequest, $store);
 
         if (empty($responseData['paymentMethods'])) {
@@ -324,6 +326,7 @@ class PaymentMethods extends AbstractHelper
      * @param \Magento\Store\Model\Store $store
      * @param $country
      * @param \Magento\Quote\Model\Quote $quote
+     * @param $channel
      * @return array
      * @throws \Exception
      */
@@ -331,12 +334,13 @@ class PaymentMethods extends AbstractHelper
         $merchantAccount,
         \Magento\Store\Model\Store $store,
         $country,
-        \Magento\Quote\Model\Quote $quote
+        \Magento\Quote\Model\Quote $quote,
+        $channel = 'Web'
     ) {
         $currencyCode = $this->chargedCurrency->getQuoteAmountCurrency($quote)->getCurrencyCode();
 
         $paymentMethodRequest = [
-            "channel" => "Web",
+            "channel" => $channel,
             "merchantAccount" => $merchantAccount,
             "countryCode" => $this->getCurrentCountryCode($store, $country),
             "shopperLocale" => $this->adyenHelper->getCurrentLocaleCode($store->getId()),
