@@ -23,6 +23,7 @@
 
 namespace Adyen\Payment\Gateway\Request;
 
+use Adyen\Payment\Observer\AdyenCcDataAssignObserver;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 
 class CustomerDataBuilder implements BuilderInterface
@@ -59,14 +60,19 @@ class CustomerDataBuilder implements BuilderInterface
         $billingAddress = $order->getBillingAddress();
         $storeId = $order->getStoreId();
         $additionalInformation = $payment->getAdditionalInformation();
-        $request['body'] = $this->adyenRequestsHelper->buildCustomerData(
-            $billingAddress,
-            $storeId,
-            $customerId,
-            $payment,
-            $additionalInformation,
-            []
-        );
+        $channel = $payment->getAdditionalInformation(AdyenCcDataAssignObserver::CHANNEL) ?: '';
+        if ($channel !== '') {
+            $request['body'] = [];
+        } else {
+            $request['body'] = $this->adyenRequestsHelper->buildCustomerData(
+                $billingAddress,
+                $storeId,
+                $customerId,
+                $payment,
+                $additionalInformation,
+                []
+            );
+        }
         return $request;
     }
 }

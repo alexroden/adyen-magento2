@@ -24,6 +24,7 @@
 namespace Adyen\Payment\Gateway\Request;
 
 use Adyen\Payment\Helper\ReturnUrlHelper;
+use Adyen\Payment\Observer\AdyenCcDataAssignObserver;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Payment\Gateway\Data\PaymentDataObject;
 use Magento\Payment\Gateway\Helper\SubjectReader;
@@ -70,8 +71,11 @@ class ReturnUrlDataBuilder implements BuilderInterface
         /** @var Order $order */
         $order = $payment->getOrder();
 
-        $returnUrl = $this->returnUrlHelper->getStoreReturnUrl($this->storeManager->getStore()->getId())
-            . '?merchantReference=' . $order->getIncrementId();
+        $returnUrl = $payment->getAdditionalInformation(AdyenCcDataAssignObserver::RETURN_URL) ?: '';
+        if ($returnUrl === '') {
+            $returnUrl = $this->returnUrlHelper->getStoreReturnUrl($this->storeManager->getStore()->getId())
+                . '?merchantReference=' . $order->getIncrementId();
+        }
 
         $requestBody['body']['returnUrl'] = $returnUrl;
 

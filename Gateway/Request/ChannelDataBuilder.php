@@ -24,6 +24,7 @@
 namespace Adyen\Payment\Gateway\Request;
 
 
+use Adyen\Payment\Observer\AdyenCcDataAssignObserver;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 
 class ChannelDataBuilder implements BuilderInterface
@@ -34,7 +35,9 @@ class ChannelDataBuilder implements BuilderInterface
      */
     public function build(array $buildSubject)
     {
-        $request['body']['channel'] = 'web';
+        $paymentDataObject = \Magento\Payment\Gateway\Helper\SubjectReader::readPayment($buildSubject);
+        $payment = $paymentDataObject->getPayment();
+        $request['body']['channel'] = $payment->getAdditionalInformation(AdyenCcDataAssignObserver::CHANNEL) ?: 'web';
         return $request;
     }
 }
