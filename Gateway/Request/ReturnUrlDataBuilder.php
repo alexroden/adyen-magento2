@@ -73,6 +73,9 @@ class ReturnUrlDataBuilder implements BuilderInterface
         $returnUrl = rtrim(
                 $this->baseUrlHelper->getStoreBaseUrl($this->storeManager->getStore()->getId()), '/'
             ) . '/adyen/process/result?merchantReference=' . $order->getIncrementId();
+        if ($payment->getAdditionalInformation('return_url') !== null) {
+            $returnUrl = $payment->getAdditionalInformation('return_url');
+        }
 
         $requestBody['body']['returnUrl'] = $returnUrl;
 

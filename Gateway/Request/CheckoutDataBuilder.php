@@ -91,9 +91,6 @@ class CheckoutDataBuilder implements BuilderInterface
         $requestBody = $payment->getAdditionalInformation(AdyenCcDataAssignObserver::STATE_DATA) ?: [];
 
         $order->setCanSendNewEmailFlag(in_array($payment->getMethod(), self::ORDER_EMAIL_REQUIRED_METHODS));
-        if ($payment->getAdditionalInformation('return_url') !== null) {
-            $requestBody['returnUrl'] = $payment->getAdditionalInformation('return_url');
-        }
 
         // Additional data for ACH
         if ($payment->getAdditionalInformation("bankAccountNumber")) {
