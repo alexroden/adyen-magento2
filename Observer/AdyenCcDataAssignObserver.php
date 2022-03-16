@@ -41,7 +41,7 @@ class AdyenCcDataAssignObserver extends AbstractDataAssignObserver
     const STATE_DATA = 'stateData';
     const STORE_PAYMENT_METHOD = 'storePaymentMethod';
     const CHANNEL = 'channel';
-    const RETURN_URL = 'returnUrl';
+    const RETURN_URL = 'return_url';
 
     /**
      * Approved root level keys from additional data array
