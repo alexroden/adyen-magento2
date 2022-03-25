@@ -24,7 +24,6 @@
 namespace Adyen\Payment\Gateway\Request;
 
 use Adyen\Payment\Helper\ReturnUrlHelper;
-use Adyen\Payment\Observer\AdyenCcDataAssignObserver;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Payment\Gateway\Data\PaymentDataObject;
 use Magento\Payment\Gateway\Helper\SubjectReader;
