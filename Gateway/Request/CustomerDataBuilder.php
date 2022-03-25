@@ -59,14 +59,19 @@ class CustomerDataBuilder implements BuilderInterface
         $billingAddress = $order->getBillingAddress();
         $storeId = $order->getStoreId();
         $additionalInformation = $payment->getAdditionalInformation();
-        $request['body'] = $this->adyenRequestsHelper->buildCustomerData(
-            $billingAddress,
-            $storeId,
-            $customerId,
-            $payment,
-            $additionalInformation,
-            []
-        );
+        $channel = $payment->getAdditionalInformation('channel') ?: '';
+        if ($channel !== '') {
+            $request['body'] = [];
+        } else {
+            $request['body'] = $this->adyenRequestsHelper->buildCustomerData(
+                $billingAddress,
+                $storeId,
+                $customerId,
+                $payment,
+                $additionalInformation,
+                []
+            );
+        }
         return $request;
     }
 }

@@ -54,15 +54,21 @@ class AddressDataBuilder implements BuilderInterface
         /** @var \Magento\Payment\Gateway\Data\PaymentDataObject $paymentDataObject */
         $paymentDataObject = \Magento\Payment\Gateway\Helper\SubjectReader::readPayment($buildSubject);
         $order = $paymentDataObject->getOrder();
+        $payment = $paymentDataObject->getPayment();
         $billingAddress = $order->getBillingAddress();
         $shippingAddress = $order->getShippingAddress();
 
-        $request['body'] = $this->adyenRequestsHelper->buildAddressData(
-            $billingAddress,
-            $shippingAddress,
-            $order->getStoreId(),
-            []
-        );
+        $channel = $payment->getAdditionalInformation('channel') ?: '';
+        if ($channel !== '') {
+            $request['body'] = [];
+        } else {
+            $request['body'] = $this->adyenRequestsHelper->buildAddressData(
+                $billingAddress,
+                $shippingAddress,
+                $order->getStoreId(),
+                []
+            );
+        }
 
         return $request;
     }
