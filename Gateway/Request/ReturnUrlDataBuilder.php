@@ -71,7 +71,7 @@ class ReturnUrlDataBuilder implements BuilderInterface
         /** @var Order $order */
         $order = $payment->getOrder();
 
-        $returnUrl = $payment->getAdditionalInformation(AdyenCcDataAssignObserver::RETURN_URL) ?: '';
+        $returnUrl = $payment->getAdditionalInformation('return_url') ?: '';
         if ($returnUrl === '') {
             $returnUrl = $this->returnUrlHelper->getStoreReturnUrl($this->storeManager->getStore()->getId())
                 . '?merchantReference=' . $order->getIncrementId();

@@ -37,6 +37,7 @@ class AdyenHppDataAssignObserver extends AbstractDataAssignObserver
     const DF_VALUE = 'df_value';
     const GUEST_EMAIL = 'guestEmail';
     const STATE_DATA = 'stateData';
+    const CHANNEL = 'channel';
     const RETURN_URL = 'return_url';
 
     /**
@@ -49,6 +50,7 @@ class AdyenHppDataAssignObserver extends AbstractDataAssignObserver
         self::DF_VALUE,
         self::GUEST_EMAIL,
         self::STATE_DATA,
+        self::CHANNEL,
         self::RETURN_URL
     ];
 

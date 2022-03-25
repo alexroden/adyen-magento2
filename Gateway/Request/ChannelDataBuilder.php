@@ -23,7 +23,6 @@
 
 namespace Adyen\Payment\Gateway\Request;
 
-
 use Magento\Payment\Gateway\Request\BuilderInterface;
 
 class ChannelDataBuilder implements BuilderInterface
@@ -34,7 +33,9 @@ class ChannelDataBuilder implements BuilderInterface
      */
     public function build(array $buildSubject)
     {
-        $request['body']['channel'] = 'web';
+        $paymentDataObject = \Magento\Payment\Gateway\Helper\SubjectReader::readPayment($buildSubject);
+        $payment = $paymentDataObject->getPayment();
+        $request['body']['channel'] = $payment->getAdditionalInformation('channel') ?: 'web';
         return $request;
     }
 }
