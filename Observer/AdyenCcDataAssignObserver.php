@@ -42,6 +42,7 @@ class AdyenCcDataAssignObserver extends AbstractDataAssignObserver
     const STORE_PAYMENT_METHOD = 'storePaymentMethod';
     const CHANNEL = 'channel';
     const RETURN_URL = 'return_url';
+    const LOCALE = 'locale';
 
     /**
      * Approved root level keys from additional data array
@@ -56,6 +57,7 @@ class AdyenCcDataAssignObserver extends AbstractDataAssignObserver
         self::CC_TYPE,
         self::CHANNEL,
         self::RETURN_URL,
+        self::LOCALE,
     ];
 
     /**
