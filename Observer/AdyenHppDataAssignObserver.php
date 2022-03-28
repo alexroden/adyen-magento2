@@ -39,6 +39,7 @@ class AdyenHppDataAssignObserver extends AbstractDataAssignObserver
     const STATE_DATA = 'stateData';
     const CHANNEL = 'channel';
     const RETURN_URL = 'return_url';
+    const LOCALE = 'locale';
 
     /**
      * Approved root level keys from additional data array
@@ -51,7 +52,8 @@ class AdyenHppDataAssignObserver extends AbstractDataAssignObserver
         self::GUEST_EMAIL,
         self::STATE_DATA,
         self::CHANNEL,
-        self::RETURN_URL
+        self::RETURN_URL,
+        self::LOCALE,
     ];
 
     /**
