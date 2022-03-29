@@ -199,7 +199,11 @@ class CheckoutDataBuilder implements BuilderInterface
             unset($requestBody['installments']);
         }
 
+        $channel = $payment->getAdditionalInformation(AdyenCcDataAssignObserver::CHANNEL) ?: 'web';
         $requestBody['additionalData']['allow3DS2'] = true;
+        if ($channel !== 'web') {
+            $requestBody['additionalData']['executeThreeD'] = true;
+        }
 
         if (isset($requestBodyPaymentMethod)) {
             $requestBody['paymentMethod'] = $requestBodyPaymentMethod;

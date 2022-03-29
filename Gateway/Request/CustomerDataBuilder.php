@@ -23,6 +23,7 @@
 
 namespace Adyen\Payment\Gateway\Request;
 
+use Adyen\Payment\Observer\AdyenCcDataAssignObserver;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 
 class CustomerDataBuilder implements BuilderInterface
