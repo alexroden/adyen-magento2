@@ -56,19 +56,18 @@ class AddressDataBuilder implements BuilderInterface
         $order = $paymentDataObject->getOrder();
         $payment = $paymentDataObject->getPayment();
         $billingAddress = $order->getBillingAddress();
-        $shippingAddress = $order->getShippingAddress();
-
         $channel = $payment->getAdditionalInformation('channel') ?: '';
-        if ($channel !== '') {
-            $request['body'] = [];
-        } else {
-            $request['body'] = $this->adyenRequestsHelper->buildAddressData(
-                $billingAddress,
-                $shippingAddress,
-                $order->getStoreId(),
-                []
-            );
+        $shippingAddress = null;
+        if ($channel === '') {
+            $shippingAddress = $order->getShippingAddress();
         }
+
+        $request['body'] = $this->adyenRequestsHelper->buildAddressData(
+            $billingAddress,
+            $shippingAddress,
+            $order->getStoreId(),
+            []
+        );
 
         return $request;
     }
