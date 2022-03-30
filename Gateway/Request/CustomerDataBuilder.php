@@ -56,9 +56,14 @@ class CustomerDataBuilder implements BuilderInterface
         $order = $paymentDataObject->getOrder();
         $payment = $paymentDataObject->getPayment();
         $customerId = $order->getCustomerId();
+        $brandCode = $payment->getAdditionalInformation('brand_code') ?: '';
         $billingAddress = $order->getBillingAddress();
-        $storeId = $order->getStoreId();
         $additionalInformation = $payment->getAdditionalInformation();
+        if ($brandCode === 'paypal') {
+            $billingAddress = null;
+            $additionalInformation = null;
+        }
+        $storeId = $order->getStoreId();
         $request['body'] = $this->adyenRequestsHelper->buildCustomerData(
             $billingAddress,
             $storeId,
