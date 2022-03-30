@@ -338,6 +338,7 @@ class PaymentMethods extends AbstractHelper
         $channel = 'Web'
     ) {
         $currencyCode = $this->chargedCurrency->getQuoteAmountCurrency($quote)->getCurrencyCode();
+        $amount = $this->chargedCurrency->getQuoteAmountCurrency($quote)->getAmount();
 
         $paymentMethodRequest = [
             "channel" => $channel,
@@ -345,7 +346,8 @@ class PaymentMethods extends AbstractHelper
             "countryCode" => $this->getCurrentCountryCode($store, $country),
             "shopperLocale" => $this->adyenHelper->getCurrentLocaleCode($store->getId()),
             "amount" => [
-                "currency" => $currencyCode
+                "currency" => $currencyCode,
+                "value"   => $amount,
             ]
         ];
 
