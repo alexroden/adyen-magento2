@@ -37,6 +37,9 @@ class AdyenHppDataAssignObserver extends AbstractDataAssignObserver
     const DF_VALUE = 'df_value';
     const GUEST_EMAIL = 'guestEmail';
     const STATE_DATA = 'stateData';
+    const CHANNEL = 'channel';
+    const RETURN_URL = 'return_url';
+    const LOCALE = 'locale';
 
     /**
      * Approved root level keys from additional data array
@@ -47,7 +50,10 @@ class AdyenHppDataAssignObserver extends AbstractDataAssignObserver
         self::BRAND_CODE,
         self::DF_VALUE,
         self::GUEST_EMAIL,
-        self::STATE_DATA
+        self::STATE_DATA,
+        self::CHANNEL,
+        self::RETURN_URL,
+        self::LOCALE,
     ];
 
     /**

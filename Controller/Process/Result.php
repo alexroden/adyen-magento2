@@ -185,13 +185,21 @@ class Result extends \Magento\Framework\App\Action\Action
                 $setQuoteAsActive = false;
             }
         } else {
-            $this->_redirect($this->_adyenHelper->getAdyenAbstractConfigData('return_path'));
+            if (empty($response['incrementID'])) {
+                $this->_redirect($this->_adyenHelper->getAdyenAbstractConfigData('return_path'));
+            }
+
+            return;
         }
 
         if ($result) {
             $session = $this->_session;
             $session->getQuote()->setIsActive($setQuoteAsActive)->save();
-            $this->_redirect($successPath, ['_query' => ['utm_nooverride' => '1']]);
+            if (empty($response['incrementID'])) {
+                $this->_redirect($successPath, ['_query' => ['utm_nooverride' => '1']]);
+            }
+
+            return;
         } else {
             $this->_adyenLogger->addAdyenResult(
                 sprintf(
@@ -200,8 +208,12 @@ class Result extends \Magento\Framework\App\Action\Action
                     $this->_order->getIncrementId()
                 )
             );
-            $this->replaceCart($response);
-            $this->_redirect($failPath, ['_query' => ['utm_nooverride' => '1']]);
+            if (empty($response['incrementID'])) {
+                $this->replaceCart($response);
+                $this->_redirect($failPath, ['_query' => ['utm_nooverride' => '1']]);
+            }
+
+            return;
         }
     }
 
@@ -248,6 +260,9 @@ class Result extends \Magento\Framework\App\Action\Action
 
         $this->_adyenLogger->addAdyenResult('Processing ResultUrl');
 
+        $incrementId = $response['incrementID'] ?? null;
+        $isApi = $incrementId !== null;
+
         // send the payload verification payment\details request to validate the response
         $response = $this->validatePayloadAndReturnResponse($response);
 
@@ -293,6 +308,13 @@ class Result extends \Magento\Framework\App\Action\Action
                 'adyen_response' => $response
             ]
         );
+
+        if ($isApi) {
+            $this->getResponse()
+                ->clearHeader('Content-Type')
+                ->setHeader('Content-Type', 'application/json')
+                ->setBody(json_encode($response));
+        }
 
         return $result;
     }
@@ -510,6 +532,9 @@ class Result extends \Magento\Framework\App\Action\Action
         $this->payment = $order->getPayment();
 
         $request = [];
+        if (!empty($response['incrementID'])) {
+            $this->_session->setLastRealOrderId($response['incrementID']);
+        }
 
         // filter details to match the keys
         $details = $result;
