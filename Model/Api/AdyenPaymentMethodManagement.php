@@ -44,7 +44,7 @@ class AdyenPaymentMethodManagement implements \Adyen\Payment\Api\AdyenPaymentMet
     /**
      * {@inheritDoc}
      */
-    public function getPaymentMethods($cartId, \Magento\Quote\Api\Data\AddressInterface $shippingAddress = null)
+    public function getPaymentMethods($cartId, \Magento\Quote\Api\Data\AddressInterface $shippingAddress = null, $channel = null)
     {
         // if shippingAddress is provided use this country
         $country = null;
@@ -52,6 +52,6 @@ class AdyenPaymentMethodManagement implements \Adyen\Payment\Api\AdyenPaymentMet
             $country = $shippingAddress->getCountryId();
         }
 
-        return $this->_paymentMethodsHelper->getPaymentMethods($cartId, $country);
+        return $this->_paymentMethodsHelper->getPaymentMethods($cartId, $country, $channel);
     }
 }
